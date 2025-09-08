@@ -1,0 +1,16 @@
+
+configuration-as-code
+configuration-as-code-groovy
+job-dsl
+git
+github
+github-branch-source
+workflow-aggregator
+workflow-job
+workflow-cps
+workflow-multibranch
+cloudbees-folder
+credentials
+plain-credentials
+credentials-binding
+ssh-credentials

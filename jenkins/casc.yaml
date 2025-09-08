@@ -1,0 +1,77 @@
+
+jenkins:
+  systemMessage: "Jenkins configurado por JCasC — laboratorio"
+  numExecutors: 2
+  mode: NORMAL
+  remotingSecurity:
+    enabled: true
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_ID}"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+  gitSCM:
+    globalConfigName: "Jenkins"
+    globalConfigEmail: "jenkins@example.local"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "github-https"
+              username: "${GITHUB_USER}"
+              password: "${GITHUB_TOKEN}"
+              description: "GitHub via HTTPS (PAT)"
+          - string:
+              scope: GLOBAL
+              id: "github-token"
+              secret: "${GITHUB_TOKEN}"
+              description: "GitHub PAT (Secret Text para pipelines)"
+          # Ejemplo opcional de credencial SSH:
+          # - basicSSHUserPrivateKey:
+          #     id: "github-ssh"
+          #     username: "git"
+          #     description: "Llave SSH para GitHub"
+          #     privateKeySource:
+          #       directEntry:
+          #         privateKey: "${GITHUB_SSH_KEY}"
+
+jobs:
+  - script: >
+      folder('laboratorio') {
+        description('Recursos del laboratorio Jenkins + JCasC')
+        displayName('laboratorio')
+      }
+
+      pipelineJob('laboratorio/ci-demo') {
+        description('Pipeline demo que usa un Jenkinsfile del repo y un secreto')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url("${GITHUB_REPO}")
+                  credentials('github-https')
+                }
+                branch("${GITHUB_BRANCH}")
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+        triggers {
+          scm('H/2 * * * *')
+        }
+      }
